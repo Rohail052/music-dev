@@ -1,198 +1,291 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AllPlay 🎶 with Spotify</title>
-  <link rel="icon" href="./allplay-icon.png" />
-  <link rel="manifest" href="./manifest.json" />
-  <style>
-    :root {
-      --bg: #f9f9fb;
-      --text: #111;
-      --accent: #1db954;
-      --card: #ffffff;
-      --glass: rgba(255, 255, 255, 0.7);
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    [data-theme="dark"] {
-      --bg: #121212;
-      --text: #f5f5f5;
-      --card: #1e1e1e;
-      --glass: rgba(255, 255, 255, 0.1);
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    }
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 0;
-    }
-    .navbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 20px;
-      background: var(--glass);
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .nav-links {
-      display: flex;
-      gap: 20px;
-    }
-    .nav-links a {
-      color: var(--accent);
-      text-decoration: none;
-      font-weight: bold;
-    }
-    .theme-toggle {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    .page {
-      display: none;
-      padding: 20px;
-    }
-    .page.active {
-      display: block;
-    }
-    .input-group {
-      display: flex;
-      justify-content: center;
-      margin: 20px auto;
-      max-width: 500px;
-      gap: 10px;
-    }
-    input[type="text"] {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid var(--accent);
-      border-radius: 8px;
-    }
-    button {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    li {
-      background: var(--card);
-      margin: 10px 0;
-      padding: 10px;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    li img {
-      width: 60px;
-      height: 60px;
-      border-radius: 6px;
-    }
-    footer {
-      text-align: center;
-      padding: 20px;
-      font-size: 14px;
-      color: #888;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AllPlay 🎶 Spotify Edition</title>
+<style>
+  /* Basic CSS styling */
+  :root {
+    --bg: #121212;
+    --text: #eee;
+    --accent: #1db954;
+    --card: #222;
+    --shadow: rgba(0,0,0,0.6);
+    --transition-duration: 0.4s;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 0; 
+    min-height: 100vh;
+  }
+  header {
+    padding: 15px;
+    background: #000;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  main {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 0 15px;
+  }
+  input[type="text"] {
+    width: 100%;
+    padding: 12px 15px;
+    border-radius: 8px;
+    border: none;
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+  button {
+    background: var(--accent);
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 1rem;
+    color: #000;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background: #14833b;
+  }
+  ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  li {
+    background: var(--card);
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background-color 0.3s ease;
+  }
+  li:hover {
+    background: #1db954aa;
+  }
+  img {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  .song-info {
+    flex-grow: 1;
+  }
+  .logout-btn {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    background: #f33;
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+  }
+  .status {
+    margin: 10px 0;
+    font-style: italic;
+    color: #ccc;
+  }
+</style>
 </head>
-<body data-theme="light">
-  <div class="navbar">
-    <div class="nav-links">
-      <a href="#" onclick="switchPage('homePage', this)" class="active">Home</a>
-      <a href="#" onclick="switchPage('playlistPage', this)">Playlist</a>
-      <a href="#" onclick="switchPage('recentPage', this)">Recent</a>
-      <a href="#" onclick="switchPage('settingsPage', this)">Settings</a>
-    </div>
-    <button class="theme-toggle" onclick="cycleTheme()">🌓</button>
-  </div>
-  <div id="homePage" class="page active">
-    <h1>AllPlay 🎶</h1>
-    <div class="input-group">
-      <input type="text" id="searchInput" placeholder="Search songs..." />
-      <button onclick="searchSpotify()">Search</button>
-    </div>
-    <ul id="results"></ul>
-  </div>
-  <div id="playlistPage" class="page">
-    <h2>Playlist</h2>
-    <ul id="playlist"></ul>
-  </div>
-  <div id="recentPage" class="page">
-    <h2>Recently Played</h2>
-    <ul id="recent"></ul>
-  </div>
-  <div id="settingsPage" class="page">
-    <h2>Settings</h2>
-    <label><input type="checkbox" id="notifyToggle"/> Enable notifications</label>
-  </div>
-  <footer>
-    © 2024–2025 <a href="https://chrohail.com" target="_blank">AllPlay 🎶 by Chaudhry</a>
-  </footer>
-  <script type="module">
-    let token = null;
-    let currentPage = 'homePage';
+<body>
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      token = sessionStorage.getItem('access_token');
-      const hash = new URLSearchParams(window.location.hash.substr(1));
-      if (hash.get('access_token')) {
-        token = hash.get('access_token');
-        sessionStorage.setItem('access_token', token);
-        window.location.hash = '';
+<header>AllPlay 🎶 Spotify Edition</header>
+
+<main>
+  <button id="logoutBtn" class="logout-btn" style="display:none;">Logout</button>
+  
+  <input type="text" id="searchInput" placeholder="Search for songs or artists..." />
+  <button id="searchBtn">Search Spotify</button>
+  
+  <div id="status" class="status"></div>
+  
+  <ul id="resultsList"></ul>
+  
+  <h3>Your Playlist</h3>
+  <ul id="playlist"></ul>
+</main>
+
+<script>
+(() => {
+  const clientId = '248cd7a9e2be4cfdb3e3c56a64369ea7';
+  const redirectUri = window.location.origin + window.location.pathname;
+  const scopes = [
+    'user-read-private',
+    'user-read-email',
+    'playlist-read-private',
+    'playlist-modify-public',
+    'playlist-modify-private',
+    'streaming',
+    'user-read-playback-state',
+    'user-modify-playback-state'
+  ].join(' ');
+
+  // Elements
+  const logoutBtn = document.getElementById('logoutBtn');
+  const searchInput = document.getElementById('searchInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const resultsList = document.getElementById('resultsList');
+  const playlistEl = document.getElementById('playlist');
+  const statusEl = document.getElementById('status');
+
+  // Authentication & token management using Implicit Grant flow
+  function login() {
+    const authUrl = new URL('https://accounts.spotify.com/authorize');
+    authUrl.searchParams.set('client_id', clientId);
+    authUrl.searchParams.set('response_type', 'token');
+    authUrl.searchParams.set('redirect_uri', redirectUri);
+    authUrl.searchParams.set('scope', scopes);
+    authUrl.searchParams.set('show_dialog', 'true');
+    window.location = authUrl.toString();
+  }
+
+  function logout() {
+    sessionStorage.removeItem('spotify_access_token');
+    window.location.href = redirectUri;
+  }
+
+  function getAccessTokenFromUrl() {
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    return params.get('access_token');
+  }
+
+  function clearUrlHash() {
+    history.replaceState(null, '', window.location.pathname);
+  }
+
+  function getToken() {
+    let token = sessionStorage.getItem('spotify_access_token');
+    if (!token) {
+      token = getAccessTokenFromUrl();
+      if (token) {
+        sessionStorage.setItem('spotify_access_token', token);
+        clearUrlHash();
       }
-      if (!token) {
-        location.href = 'https://accounts.spotify.com/authorize?client_id=248cd7a9e2be4cfdb3e3c56a64369ea7&response_type=token&redirect_uri=https://ch-music-dev.netlify.app/&scope=user-read-private';
-      }
+    }
+    return token;
+  }
+
+  // Spotify API helper
+  async function spotifyFetch(endpoint, options = {}) {
+    const token = getToken();
+    if (!token) {
+      login();
+      return;
+    }
+    options.headers = {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+    const res = await fetch('https://api.spotify.com/v1' + endpoint, options);
+    if (res.status === 401) {
+      // Token expired or invalid, logout and re-login
+      logout();
+      return;
+    }
+    return await res.json();
+  }
+
+  // Search tracks
+  async function searchTracks(query) {
+    statusEl.textContent = 'Searching...';
+    const data = await spotifyFetch('/search?type=track&q=' + encodeURIComponent(query) + '&limit=10');
+    statusEl.textContent = '';
+    if (!data || !data.tracks) {
+      statusEl.textContent = 'No results or error.';
+      return [];
+    }
+    return data.tracks.items;
+  }
+
+  // Render search results
+  function renderSearchResults(tracks) {
+    resultsList.innerHTML = '';
+    tracks.forEach(track => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <img src="${track.album.images[2]?.url || ''}" alt="album art" />
+        <div class="song-info">
+          <strong>${track.name}</strong><br/>
+          ${track.artists.map(a => a.name).join(', ')}
+        </div>
+      `;
+      li.onclick = () => addToPlaylist(track);
+      resultsList.appendChild(li);
     });
+  }
 
-    window.searchSpotify = async () => {
-      const q = document.getElementById('searchInput').value.trim();
-      if (!q || !token) return;
-      const res = await fetch(`https://api.spotify.com/v1/search?q=${encodeURIComponent(q)}&type=track`, {
-        headers: { Authorization: 'Bearer ' + token }
-      });
-      const data = await res.json();
-      const results = document.getElementById('results');
-      results.innerHTML = '';
-      (data.tracks.items || []).forEach(track => {
-        const li = document.createElement('li');
-        li.innerHTML = `
-          <img src="${track.album.images[0]?.url}" alt="" />
-          <span>${track.name} — ${track.artists.map(a => a.name).join(', ')}</span>
-          <audio controls src="${track.preview_url}" style="margin-left:auto"></audio>
-        `;
-        results.appendChild(li);
-      });
-    }
+  // Playlist management (simple in-memory)
+  const playlist = [];
 
-    window.switchPage = (id, el) => {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
-      el.classList.add('active');
+  function addToPlaylist(track) {
+    if (playlist.some(t => t.id === track.id)) {
+      alert('Track already in playlist!');
+      return;
     }
+    playlist.push(track);
+    renderPlaylist();
+  }
 
-    window.cycleTheme = () => {
-      const b = document.body;
-      b.dataset.theme = b.dataset.theme === 'dark' ? 'light' : 'dark';
+  function renderPlaylist() {
+    playlistEl.innerHTML = '';
+    playlist.forEach((track, i) => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <img src="${track.album.images[2]?.url || ''}" alt="album art" />
+        <div class="song-info">
+          <strong>${track.name}</strong><br/>
+          ${track.artists.map(a => a.name).join(', ')}
+        </div>
+        <button data-index="${i}">Remove</button>
+      `;
+      li.querySelector('button').onclick = e => {
+        e.stopPropagation();
+        playlist.splice(i, 1);
+        renderPlaylist();
+      };
+      playlistEl.appendChild(li);
+    });
+  }
+
+  // Initialization
+  function init() {
+    const token = getToken();
+    if (!token) {
+      login();
+      return;
     }
-  </script>
+    logoutBtn.style.display = 'inline-block';
+    logoutBtn.onclick = logout;
+
+    searchBtn.onclick = async () => {
+      const query = searchInput.value.trim();
+      if (!query) {
+        alert('Please enter a search term.');
+        return;
+      }
+      const tracks = await searchTracks(query);
+      renderSearchResults(tracks);
+    };
+  }
+
+  window.onload = init;
+})();
+</script>
+
 </body>
 </html>
