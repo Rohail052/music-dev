@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AllPlay 🎶 Full App</title>
+  <style>
+    :root {
+      --bg: #fff9fb;
+      --text: #4a002d;
+      --accent: #e91e63;
+      --card: #ffe6f0;
+      --glass: rgba(233, 30, 99, 0.1);
+      --shadow: 0 6px 16px rgba(233, 30, 99, 0.15);
+      --transition: 0.3s ease;
+      --font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+    [data-theme="dark"] {
+      --bg: #29001a;
+      --text: #ffbad8;
+      --card: #45002f;
+      --glass: rgba(233, 30, 99, 0.3);
+      --shadow: 0 6px 16px rgba(233, 30, 99, 0.5);
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 60px; /* nav height */
+    }
+
+    /* Navbar */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 1000;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 30px;
+      font-weight: 600;
+      font-size: 16px;
+      user-select: none;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: var(--accent);
+      cursor: pointer;
+      position: relative;
+      padding: 5px 0;
+    }
+
+    .nav-links a.active::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      right: 0;
+      height: 2.5px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .hamburger-menu {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+      gap: 5px;
+      user-select: none;
+    }
+
+    .hamburger-menu div {
+      width: 25px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: 0.4s;
+    }
+
+    .hamburger-menu.open div:nth-child(1) {
+      transform: rotate(-45deg) translate(-5px, 6px);
+    }
+
+    .hamburger-menu.open div:nth-child(2) {
+      opacity: 0;
+    }
+
+    .hamburger-menu.open div:nth-child(3) {
+      transform: rotate(45deg) translate(-5px, -6px);
+    }
+
+    /* Responsive nav */
+    @media (max-width: 768px) {
+      .nav-links {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        box-shadow: var(--shadow);
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 15px 20px;
+        gap: 20px;
+        display: none;
+        user-select: none;
+      }
+      .nav-links.active {
+        display: flex;
+      }
+      .hamburger-menu {
+        display: flex;
+      }
+    }
+
+    /* Page container */
+    main {
+      width: 100%;
+      max-width: 650px;
+      padding: 20px;
+      flex-grow: 1;
+    }
+
+    .page {
+      display: none;
+      animation: fadeIn 0.4s ease forwards;
+    }
+    .page.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(12px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+
+    /* Home Page */
+
+    #searchContainer {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    #searchInput {
+      flex: 1;
+      padding: 12px 16px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 2px solid var(--accent);
+      outline-offset: 2px;
+      transition: border-color var(--transition);
+    }
+
+    #searchInput:focus {
+      border-color: #ff4081;
+    }
+
+    #searchButton {
+      background: var(--accent);
+      border: none;
+      color: white;
+      font-weight: 700;
+      padding: 12px 25px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color var(--transition);
+      user-select: none;
+    }
+    #searchButton:hover {
+      background: #d81b60;
+    }
+
+    #audioOnlyToggleContainer {
+      margin-bottom: 20px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+    #audioOnlyToggle {
+      transform: scale(1.3);
+      cursor: pointer;
+    }
+
+    #resultsList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    #resultsList li {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 10px;
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color var(--transition);
+      user-select: text;
+    }
+    #resultsList li:hover,
+    #resultsList li:focus-visible {
+      background: var(--glass);
+      outline: none;
+    }
+
+    #resultsList img {
+      width: 100px;
+      height: 56px;
+      border-radius: 8px;
+      object-fit: cover;
+      pointer-events: none;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    #resultsList p {
+      margin: 0;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--text);
+      flex: 1;
+      user-select: text;
+    }
+
+    /* Player inserted below clicked song */
+
+    .player-container {
+      margin-top: 10px;
+      width: 100%;
+      height: 360px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      background: var(--card);
+      overflow: hidden;
+      position: relative;
+      user-select: none;
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    .player-container.audio-only-text {
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+      font-style: italic;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--accent);
+      height: 40px;
+    }
+
+    .player-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Playlist Page */
+
+    #playlistPage h2,
+    #recentPage h2,
+    #settingsPage h2 {
+      margin-bottom: 20px;
+      color: var(--accent);
+      text-align: center;
+      user-select: none;
+    }
+
+    .playlist-management {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .playlist-management input[type="text"] {
+      padding: 10px 15px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1.5px solid var(--accent);
+      flex-grow: 1;
+      max-width: 300px;
+      outline-offset: 2px;
+    }
+
+    .playlist-management button {
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 10px 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color var(--transition);
+      user-select: none;
+    }
+    .playlist-management button:hover {
+      background: #d81b60;
+    }
+
+    #activePlaylistSelector {
+      width: 100%;
+      max-width: 350px;
+      font-size: 14px;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1.5px solid var(--accent);
+      margin-bottom: 15px;
+      user-select: none;
+    }
+
+    #playlistItems,
+    #recentlyPlayedList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      max-width: 650px;
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    #playlistItems li,
+    #recentlyPlayedList li {
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: text;
+    }
+
+    #playlistItems li button,
+    #recentlyPlayedList li button {
+      background: var(--accent);
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color var(--transition);
+      user-select: none;
+    }
+    #playlistItems li button:hover,
+    #recentlyPlayedList li button:hover {
+      background: #d81b60;
+    }
+
+    /* Settings page */
+
+    #settingsPage label {
+      user-select: none;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    #settingsPage input[type="checkbox"] {
+      transform: scale(1.3);
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body data-theme="light">
+  <nav class="navbar" role="navigation" aria-label="Primary">
+    <div class="hamburger-menu" aria-label="Toggle menu" role="button" tabindex="0" aria-expanded="false">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+    <div class="nav-links" role="menubar">
+      <a href="#" role="menuitem" class="active" data-page="home">Home</a>
+      <a href="#" role="menuitem" data-page="playlist">Playlist</a>
+      <a href="#" role="menuitem" data-page="recent">Recent</a>
+      <a href="#" role="menuitem" data-page="settings">Settings</a>
+    </div>
+  </nav>
+
+  <main>
+    <!-- Home Page -->
+    <section id="home" class="page active" aria-label="Home page">
+      <h1>AllPlay 🎶</h1>
+      <div id="searchContainer">
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Search for songs..."
+          autocomplete="off"
+          aria-label="Search songs"
+        />
+        <button id="searchButton" aria-label="Search songs">Search</button>
+      </div>
+
+      <label id="audioOnlyToggleContainer" for="audioOnlyToggle">
+        <input type="checkbox" id="audioOnlyToggle" aria-label="Enable audio-only mode" />
+        Audio-Only Mode
+      </label>
+
+      <ul id="resultsList" aria-live="polite" aria-label="Search results"></ul>
+    </section>
+
+    <!-- Playlist Page -->
+    <section id="playlist" class="page" aria-label="Playlist management page">
+      <h2>Your Playlist</h2>
+      <div class="playlist-management">
+        <input
+          type="text"
+          id="newPlaylistName"
+          placeholder="New playlist name"
+          autocomplete="off"
+          aria-label="New playlist name"
+        />
+        <button id="createPlaylistBtn">Create</button>
+      </div>
+
+      <select id="activePlaylistSelector" aria-label="Select active playlist"></select>
+
+      <div style="display:flex; justify-content:center; gap:10px; margin-bottom:15px;">
+        <button id="renamePlaylistBtn">Rename Playlist</button>
+        <button id="deletePlaylistBtn">Delete Playlist</button>
+      </div>
+
+      <ul id="playlistItems" aria-live="polite" aria-label="Playlist songs"></ul>
+
+      <div style="display:flex; justify-content:center; gap:10px; margin-top:20px;">
+        <button id="exportPlaylistsBtn">Export Playlists</button>
+        <button id="importPlaylistsBtn">Import Playlists</button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none;" />
+      </div>
+    </section>
+
+    <!-- Recent Page -->
+    <section id="recent" class="page" aria-label="Recently played songs page">
+      <h2>Recently Played</h2>
+      <button id="clearRecentBtn" style="margin-bottom:15px;">Clear Recent</button>
+      <ul id="recentlyPlayedList" aria-live="polite" aria-label="Recently played songs"></ul>
+    </section>
+
+    <!-- Settings Page -->
+    <section id="settings" class="page" aria-label="Settings page">
+      <h2>Settings</h2>
+      <label>
+        <input type="checkbox" id="notifyToggle" />
+        Enable Notifications
+      </label>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
